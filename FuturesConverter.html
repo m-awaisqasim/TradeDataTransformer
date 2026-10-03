@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Futures Journal Converter</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'></text></svg>">
+<style>
+:root{
+  --glass:rgba(255,255,255,.07); --stroke:rgba(255,255,255,.14);
+  --txt:#e8ecf8; --muted:#9aa3b8; --green:#2cc985; --red:#ff5c6c; --blue:#4cc3ff; --violet:#8b7bff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:#0b1020;color:var(--txt);min-height:100vh;overflow-x:hidden}
+.blob{position:fixed;border-radius:50%;filter:blur(95px);z-index:0;animation:float 14s ease-in-out infinite alternate}
+.b1{width:520px;height:520px;background:#7b2ff7;opacity:.5;top:-140px;left:-120px}
+.b2{width:460px;height:460px;background:#00c2ff;opacity:.4;bottom:-160px;right:-100px;animation-delay:-6s}
+.b3{width:300px;height:300px;background:#2cc985;opacity:.22;top:42%;left:58%;animation-delay:-3s}
+@keyframes float{from{transform:translate(0,0) scale(1)}to{transform:translate(45px,30px) scale(1.08)}}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:44px 22px 80px}
+h1{font-size:34px;font-weight:800;background:linear-gradient(90deg,#4cc3ff,#8b7bff 55%,#ff5c9b);
+   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--muted);font-size:14px;margin:6px 0 26px}
+.glass{background:var(--glass);border:1px solid var(--stroke);border-radius:20px;
+       backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.drop{border:2px dashed rgba(255,255,255,.25);border-radius:18px;padding:46px 20px;text-align:center;cursor:pointer;transition:.25s;margin:18px}
+.drop.over{border-color:var(--blue);background:rgba(76,195,255,.08);transform:scale(1.01)}
+.drop .big{font-size:40px}
+.drop p{color:var(--muted);margin-top:8px;font-size:14px}
+.opts{display:flex;gap:26px;flex-wrap:wrap;padding:4px 20px 18px}
+.tog{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);cursor:pointer}
+.tog input{appearance:none;width:40px;height:22px;border-radius:999px;background:rgba(255,255,255,.15);position:relative;cursor:pointer;transition:.2s;outline:none}
+.tog input:checked{background:linear-gradient(90deg,#00c2ff,#7b2ff7)}
+.tog input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.tog input:checked::after{left:21px}
+.hidden{display:none!important}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px;margin:22px 0 6px}
+.metric{padding:16px 18px}
+.metric .lbl{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.9px}
+.metric .val{font-size:23px;font-weight:800;margin-top:6px}
+.val.pos{color:var(--green)} .val.neg{color:var(--red)}
+.tabs{display:flex;gap:8px;margin:18px 0 14px;flex-wrap:wrap}
+.tab{padding:9px 18px;border-radius:12px;border:1px solid var(--stroke);background:transparent;color:var(--muted);cursor:pointer;font-size:13.5px;font-weight:600}
+.tab.active{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.3)}
+.tbl-wrap{max-height:440px;overflow:auto;border-radius:16px;border:1px solid var(--stroke)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{position:sticky;top:0;background:rgba(18,22,40,.92);backdrop-filter:blur(8px);text-align:left;padding:11px 14px;font-size:11.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}
+td{padding:9px 14px;border-top:1px solid rgba(255,255,255,.06);white-space:nowrap}
+tbody tr:hover{background:rgba(255,255,255,.05)}
+.pill{padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700}
+.pill.buy{background:rgba(44,201,133,.16);color:#5ee0a8;border:1px solid rgba(44,201,133,.4)}
+.pill.sell{background:rgba(255,92,108,.14);color:#ff8b96;border:1px solid rgba(255,92,108,.4)}
+.pill.entry{background:rgba(76,195,255,.14);color:#7fd4ff;border:1px solid rgba(76,195,255,.35)}
+.pill.exit{background:rgba(139,123,255,.16);color:#b1a6ff;border:1px solid rgba(139,123,255,.4)}
+.btn{background:linear-gradient(90deg,#00c2ff,#7b2ff7);border:none;color:#fff;padding:13px 26px;border-radius:14px;font-weight:700;font-size:14.5px;cursor:pointer;transition:.2s;margin:16px 0 4px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(123,47,247,.4)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.charts{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:6px}
+@media(max-width:820px){.charts{grid-template-columns:1fr}}
+.chart-card{padding:16px}
+.chart-card h3{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.7px}
+.chart{width:100%;height:auto}
+.axl{fill:var(--muted);font-size:11px}
+.dval{fill:#fff;font-size:8px;font-weight:800;text-anchor:middle}
+.dlbl{fill:var(--muted);font-size:3.4px;text-anchor:middle}
+.bar-row{display:grid;grid-template-columns:90px 1fr 90px;gap:10px;align-items:center;margin:7px 0;font-size:12.5px}
+.bar-track{height:9px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.bar-fill{height:100%;border-radius:99px}
+.bar-fill.pos{background:linear-gradient(90deg,#1a8f61,#2cc985)}
+.bar-fill.neg{background:linear-gradient(90deg,#a3323f,#ff5c6c)}
+.bar-val{text-align:right} .pos-t{color:var(--green)} .neg-t{color:var(--red)}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(90px);padding:13px 24px;border-radius:14px;background:rgba(255,92,108,.95);color:#fff;font-weight:600;font-size:14px;transition:.35s;opacity:0;z-index:9;backdrop-filter:blur(6px)}
+#toast.show{transform:translateX(-50%);opacity:1}
+#toast.ok{background:rgba(44,201,133,.95)}
+.foot{color:var(--muted);font-size:12px;margin-top:22px;text-align:center}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+<div class="wrap">
+  <h1>⚡ Futures Journal Converter</h1>
+  <div class="sub">Long / Short positions → Buy / Sell execution rows &nbsp;•&nbsp; USDT suffix stripped &nbsp;•&nbsp; Fee = position fee − funding fees</div>
+
+  <div class="glass">
+    <div class="drop" id="drop">
+      <div class="big">📂</div>
+      <p><b>Drop your journal CSV here</b> or click to browse</p>
+    </div>
+    <input type="file" id="file" accept=".csv,text/csv" class="hidden">
+    <div class="opts">
+      <label class="tog"><input type="checkbox" id="optDups" checked> Remove exact duplicate rows</label>
+      <label class="tog"><input type="checkbox" id="optSort" checked> Sort output chronologically</label>
+      <span class="pill entry hidden" id="dupChip"></span>
+    </div>
+  </div>
+
+  <section id="results" class="hidden">
+    <div class="metrics">
+      <div class="glass metric"><div class="lbl">Trades</div><div class="val" id="mTrades">–</div></div>
+      <div class="glass metric"><div class="lbl">Output rows</div><div class="val" id="mRows">–</div></div>
+      <div class="glass metric"><div class="lbl">Win rate</div><div class="val" id="mWin">–</div></div>
+      <div class="glass metric"><div class="lbl">Realized PnL</div><div class="val" id="mPnl">–</div></div>
+      <div class="glass metric"><div class="lbl">Total fees</div><div class="val" id="mFee">–</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="trades">📑 Converted trades</button>
+      <button class="tab" data-tab="charts">📊 Analytics</button>
+      <button class="tab" data-tab="raw">🧾 Raw input</button>
+    </div>
+
+    <div id="tab-trades">
+      <div class="tbl-wrap"><table id="outTable"></table></div>
+      <button class="btn" id="dl">⬇️ Download converted CSV</button>
+    </div>
+
+    <div id="tab-charts" class="hidden">
+      <div class="charts">
+        <div class="glass chart-card"><h3>Equity curve (cumulative realized PnL)</h3><div id="eqChart"></div></div>
+        <div class="glass chart-card"><h3>Win / Loss</h3><div id="donut"></div></div>
+      </div>
+      <div class="glass chart-card" style="margin-top:14px"><h3>PnL by symbol (top 10)</h3><div id="bars"></div></div>
+    </div>
+
+    <div id="tab-raw" class="hidden">
+      <div class="tbl-wrap"><table id="rawTable"></table></div>
+    </div>
+  </section>
+
+  <div class="foot">100% local — your data never leaves this browser tab.</div>
+</div>
+<div id="toast"></div>
+
+<script>
+const REQUIRED=["futures","opening time","average entry price","average closing price","closed amount",
+                "closed value","position pnl","realized pnl","funding fees","position fee","closed time"];
+const OUT_COLS=["Symbol","Side","Quantity","Price","Timestamp","Fee","Status"];
+const state={records:[],header:[],trades:[],rows:[],fileName:"journal"};
+const el=id=>document.getElementById(id);
+const fmt=n=>{if(!isFinite(n))return"";return parseFloat(n.toPrecision(10)).toLocaleString("en-US",{maximumFractionDigits:8});};
+
+/* ---------- CSV parsing ---------- */
+function parseCSV(text){
+  if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+  const rows=[];let row=[],field="",i=0,inQ=false;
+  while(i<text.length){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i+=2;continue;} inQ=false;i++;continue; }
+      field+=c;i++;continue;
+    }
+    if(c==='"'){inQ=true;i++;continue;}
+    if(c===","){row.push(field);field="";i++;continue;}
+    if(c==="\r"){i++;continue;}
+    if(c==="\n"){row.push(field);rows.push(row);row=[];field="";i++;continue;}
+    field+=c;i++;
+  }
+  if(field!==""||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.some(c=>c.trim()!==""));
+}
+
+/* ---------- conversion (finalized rules) ---------- */
+function convert(recs,sortTime){
+  const trades=recs.map(r=>{
+    const parts=String(r["futures"]).trim().split(/\s+/);
+    return{
+      symbol:parts[0].replace(/USDT(\.P)?$/,""),
+      direction:(parts[1]||"").split("·")[0],
+      qty:parseFloat(String(r["closed amount"]).split(/\s+/)[0]),
+      entryPrice:parseFloat(r["average entry price"]),
+      exitPrice:parseFloat(r["average closing price"]),
+      openTime:r["opening time"],closeTime:r["closed time"],
+      realizedPnl:parseFloat(r["realized pnl"]),
+      fee:parseFloat(r["position fee"])-parseFloat(r["funding fees"])
+    };
+  });
+  const rows=[];
+  trades.forEach(t=>{
+    const long=t.direction==="Long";
+    rows.push({Symbol:t.symbol,Side:long?"Buy":"Sell",Quantity:t.qty,Price:t.entryPrice,Timestamp:t.openTime,Fee:0,Status:"Entry"});
+    rows.push({Symbol:t.symbol,Side:long?"Sell":"Buy",Quantity:t.qty,Price:t.exitPrice,Timestamp:t.closeTime,Fee:t.fee,Status:"Exit"});
+  });
+  if(sortTime)rows.sort((a,b)=>new Date(a.Timestamp)-new Date(b.Timestamp));
+  return{trades,rows};
+}
+
+/* ---------- pipeline ---------- */
+function runPipeline(){
+  let recs=[...state.records];
+  if(el("optDups").checked){
+    const seen=new Set(),before=recs.length;
+    recs=recs.filter(r=>{const k=REQUIRED.map(c=>r[c]).join("\u0001");if(seen.has(k))return false;seen.add(k);return true;});
+    const removed=before-recs.length;
+    el("dupChip").classList.toggle("hidden",!removed);
+    if(removed)el("dupChip").textContent=`🧹 ${removed} duplicate row(s) removed`;
+  }else el("dupChip").classList.add("hidden");
+  const{trades,rows}=convert(recs,el("optSort").checked);
+  state.trades=trades;state.rows=rows;
+  renderAll();
+}
+
+/* ---------- rendering ---------- */
+function renderAll(){
+  const t=state.trades,rows=state.rows;
+  el("results").classList.remove("hidden");
+  const wins=t.filter(x=>x.realizedPnl>0).length;
+  const pnl=t.reduce((s,x)=>s+x.realizedPnl,0);
+  const fee=t.reduce((s,x)=>s+x.fee,0);
+  el("mTrades").textContent=t.length;
+  el("mRows").textContent=rows.length;
+  el("mWin").textContent=t.length?(wins/t.length*100).toFixed(1)+"%":"–";
+  el("mPnl").textContent=fmt(pnl);el("mPnl").className="val "+(pnl>=0?"pos":"neg");
+  el("mFee").textContent=fmt(fee);
+  el("outTable").innerHTML=tableHTML(OUT_COLS,rows.slice(0,1500),true);
+  el("rawTable").innerHTML=tableHTML(state.header,state.records.slice(0,1500),false);
+  el("eqChart").innerHTML=equityChart(t);
+  el("donut").innerHTML=donut(t.length?wins/t.length*100:0);
+  el("bars").innerHTML=symbolBars(t);
+  el("dl").disabled=false;
+}
+function tableHTML(cols,data,isOut){
+  const head="<thead><tr>"+cols.map(c=>`<th>${c}</th>`).join("")+"</tr></thead>";
+  const body="<tbody>"+data.map(r=>"<tr>"+cols.map(c=>{
+    let v=r[c];
+    if(isOut&&c==="Side")return`<td><span class="pill ${String(v).toLowerCase()}">${v}</span></td>`;
+    if(isOut&&c==="Status")return`<td><span class="pill ${String(v).toLowerCase()}">${v}</span></td>`;
+    if(isOut&&(c==="Price"||c==="Fee"||c==="Quantity"))v=fmt(parseFloat(v));
+    return`<td>${v??""}</td>`;
+  }).join("")+"</tr>").join("")+"</tbody>";
+  return head+body;
+}
+function equityChart(t){
+  const sorted=[...t].sort((a,b)=>new Date(a.closeTime)-new Date(b.closeTime));
+  const vals=[0];let c=0;sorted.forEach(x=>{c+=x.realizedPnl;vals.push(c);});
+  const W=860,H=260,P=36,n=Math.max(vals.length-1,1);
+  const minY=Math.min(...vals),maxY=Math.max(...vals),span=(maxY-minY)||1;
+  const X=i=>P+(i/n)*(W-2*P), Y=v=>H-P-((v-minY)/span)*(H-2*P);
+  const d=vals.map((v,i)=>`${i?"L":"M"} ${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");
+  const area=`${d} L ${X(n).toFixed(1)} ${H-P} L ${P} ${H-P} Z`;
+  return`<svg viewBox="0 0 ${W} ${H}" class="chart">
+    <defs><linearGradient id="eg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4cc3ff" stop-opacity=".4"/><stop offset="1" stop-color="#4cc3ff" stop-opacity="0"/>
+    </linearGradient></defs>
+    <line x1="${P}" y1="${Y(0)}" x2="${W-P}" y2="${Y(0)}" stroke="rgba(255,255,255,.25)" stroke-dasharray="4 4"/>
+    <path d="${area}" fill="url(#eg)"/><path d="${d}" fill="none" stroke="#4cc3ff" stroke-width="2.5"/>
+    <text x="${P}" y="16" class="axl">peak ${fmt(maxY)}</text>
+    <text x="${W-P}" y="${H-6}" text-anchor="end" class="axl">trough ${fmt(minY)}</text></svg>`;
+}
+function donut(pct){
+  const w=pct.toFixed(1);
+  return`<svg viewBox="0 0 42 42" style="width:60%;max-width:220px;display:block;margin:6px auto">
+    <circle cx="21" cy="21" r="15.9155" fill="none" stroke="rgba(255,92,108,.55)" stroke-width="4.5"/>
+    <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#2cc985" stroke-width="4.5"
+      stroke-dasharray="${w} ${100-w}" stroke-dashoffset="25" stroke-linecap="round"/>
+    <text x="21" y="21.5" class="dval">${w}%</text><text x="21" y="27" class="dlbl">win rate</text></svg>`;
+}
+function symbolBars(t){
+  const m={};t.forEach(x=>m[x.symbol]=(m[x.symbol]||0)+x.realizedPnl);
+  const arr=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const max=Math.max(...arr.map(a=>Math.abs(a[1])),1e-9);
+  return arr.map(([s,v])=>`<div class="bar-row"><span>${s}</span>
+    <div class="bar-track"><div class="bar-fill ${v>=0?"pos":"neg"}" style="width:${(Math.abs(v)/max*100).toFixed(1)}%"></div></div>
+    <span class="bar-val ${v>=0?"pos-t":"neg-t"}">${fmt(v)}</span></div>`).join("")||"<p style='color:var(--muted)'>No data</p>";
+}
+
+/* ---------- CSV download ---------- */
+function toCSV(rows){
+  const esc=v=>{v=String(v);return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  return OUT_COLS.join(",")+"\n"+rows.map(r=>OUT_COLS.map(c=>esc(r[c])).join(",")).join("\n");
+}
+
+/* ---------- events ---------- */
+function toast(msg,ok){const t=el("toast");t.textContent=msg;t.className=ok?"show ok":"show";setTimeout(()=>t.className="",3200);}
+function handleFile(file){
+  file.text().then(txt=>{
+    const grid=parseCSV(txt);
+    if(grid.length<2)return toast("File is empty or has no data rows.");
+    const header=grid[0].map(h=>h.trim());
+    const missing=REQUIRED.filter(c=>!header.includes(c));
+    if(missing.length)return toast("Missing columns: "+missing.join(", "));
+    state.header=header;
+    state.records=grid.slice(1).map(r=>{const o={};header.forEach((h,i)=>o[h]=(r[i]??"").trim());return o;});
+    state.fileName=file.name.replace(/\.csv$/i,"");
+    runPipeline();
+    toast(`✅ Loaded ${state.records.length} trades`,true);
+  });
+}
+const drop=el("drop");
+drop.addEventListener("click",()=>el("file").click());
+drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over");});
+drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
+drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+el("file").addEventListener("change",e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+el("optDups").addEventListener("change",()=>{if(state.records.length)runPipeline();});
+el("optSort").addEventListener("change",()=>{if(state.records.length)runPipeline();});
+el("dl").addEventListener("click",()=>{
+  const blob=new Blob(["\uFEFF"+toCSV(state.rows)],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=state.fileName+"_buy_sell.csv";
+  a.click();URL.revokeObjectURL(a.href);
+  toast("⬇️ CSV downloaded",true);
+});
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  ["trades","charts","raw"].forEach(t=>el("tab-"+t).classList.toggle("hidden",t!==b.dataset.tab));
+}));
+</script>
+</body>
+</html>
